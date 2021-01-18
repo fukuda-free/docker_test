@@ -1,0 +1,64 @@
+version: '3'
+services:
+  beats:
+    # build: .
+    image: docker.elastic.co/beats/filebeat:7.10.2
+    mem_limit: 512m
+    container_name: beats_c_el
+    image: beats_i_el:1.0.1
+    volumes:
+      - ../data/nginx:/var/log/nginx/
+    networks:
+      - shared-network
+
+
+  logstash:
+    mem_limit: 512m
+    build: .
+    ports:
+      - 5044:5044
+    networks:
+      - shared-network
+
+
+  elasticsearch:
+    # build: .
+    image: docker.elastic.co/elasticsearch/elasticsearch
+    container_name: elasticsearch
+    environment:
+      - ES_JAVA_OPTS=-Xms512m -Xmx512m
+    volumes:
+      - ../data/es:/usr/share/elasticsearch/data
+    ports:
+      - 9200:9200
+    networks:
+      - default
+      - shared-network
+
+
+  kibana:
+    mem_limit: 512m
+    build: .
+    container_name: kibana_c_el
+    image: docker.elastic.co/kibana/kibana
+    # image: kibana_i_el:1.0.4
+    ports:
+      - 5601:5601
+    networks:
+      - default
+      - shared-network
+
+
+  web:
+    mem_limit: 512m
+    image: nginx:latest
+    ports:
+      - "8080:80"
+    volumes:
+      - ../data/nginx:/var/log/nginx
+
+
+
+networks:
+  shared-network:
+    external: true
