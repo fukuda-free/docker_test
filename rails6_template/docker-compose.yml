@@ -1,56 +1,20 @@
-version: '3.9'
-
-
+version: '3'
 services:
-  rails_app:
-    build:
-      context: .
-    tty: true
-    env_file:
-      - ./environments/db.env
-    # command: bundle exec puma -C config/puma.rb
-    command: bundle exec rails s -p 3000 -b '0.0.0.0'
-    ports:
-      - "3000:3000"
-    volumes:
-      - .:/rails_app
-      - public-data:/rails_app/public
-      - tmp-data:/rails_app/tmp
-      - log-data:/rails_app/log
-    depends_on:
-      - mysql
-
-
-
-  mysql:
+  db:
     image: mysql:5.7
     environment:
-      # - MYSQL_DATABASE=rails_db
-      # - MYSQL_USER=rails_user
-      # - MYSQL_PASSWORD=rails_password
-      - MYSQL_ROOT_PASSWORD=secret
-      - TZ=Asia/Tokyo
+      MYSQL_ROOT_PASSWORD: password
     volumes:
-      - mysql-data:/var/lib/mysql
-
-
-
-  nginx:
-    build:
-      context: containers/nginx
+     - mysql-db:/var/lib/mysql
+  web:
+    build: .
+    command: bundle exec rails s -b 0.0.0.0
     volumes:
-      - public-data:/webapp/public
-      - tmp-data:/webapp/tmp
+      - .:/app
     ports:
-      - 80:80
+      - "3000:3000"
     depends_on:
-      - rails_app
-
-
-
-
+      - db
 volumes:
-  public-data:
-  tmp-data:
-  log-data:
-  mysql-data:
+  mysql-db:
+    driver: local
